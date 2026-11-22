@@ -90,12 +90,9 @@ export const toISO8601 = (date: Date) => {
   if (Number.isNaN(date.getTime())) {
     throw new RangeError('Invalid date')
   }
-  let day = '' + date.getDate()
-  let month = '' + (date.getMonth() + 1)
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
   const year = date.getFullYear()
-
-  if (month.length < 2) month = '0' + month
-  if (day.length < 2) day = '0' + day
 
   return [year, month, day].join('-')
 }
