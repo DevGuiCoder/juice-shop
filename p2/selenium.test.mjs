@@ -11,6 +11,8 @@ async function click (driver, selector) {
   const element = await locate(driver, selector)
   await driver.wait(until.elementIsVisible(element), 10000)
   await driver.wait(until.elementIsEnabled(element), 10000)
+  await driver.executeScript('arguments[0].scrollIntoView({block:"center"})', element)
+  await driver.wait(async () => driver.executeScript('const r=arguments[0].getBoundingClientRect(); const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2); return hit && arguments[0].contains(hit)', element), 10000)
   await element.click()
 }
 async function createAccount () {
@@ -25,6 +27,7 @@ async function login (driver, email) {
   await (await locate(driver, '#password')).sendKeys(password)
   await click(driver, '#loginButton')
   await driver.wait(async () => Boolean(await driver.executeScript('return localStorage.getItem("token")')), 15000)
+  await driver.wait(until.urlContains('/search'), 15000)
 }
 async function scenario (id, body) {
   let driver
@@ -56,7 +59,7 @@ test('UI-01 CT-001 cadastro pela interface', () => scenario('UI-01', async drive
   await (await locate(driver, '#emailControl')).sendKeys(email)
   await (await locate(driver, '#passwordControl')).sendKeys(password)
   await (await locate(driver, '#repeatPasswordControl')).sendKeys(password)
-  await click(driver, 'mat-select[name="securityQuestion"]')
+  await (await locate(driver, 'mat-select[name="securityQuestion"]')).sendKeys(Key.SPACE)
   await click(driver, 'mat-option')
   await (await locate(driver, '#securityAnswerControl')).sendKeys('Azul')
   await click(driver, '#registerButton')
@@ -67,7 +70,9 @@ test('UI-01 CT-001 cadastro pela interface', () => scenario('UI-01', async drive
 test('UI-02 CT-009 login da conta própria', () => scenario('UI-02', async driver => {
   await login(driver, await createAccount())
   await click(driver, '#navbarAccount')
-  assert.ok(await (await locate(driver, '#navbarLogoutButton')).isDisplayed())
+  const logout = await locate(driver, '#navbarLogoutButton')
+  await driver.wait(until.elementIsVisible(logout), 10000)
+  assert.ok(await logout.isDisplayed())
 }))
 test('UI-03 CT-013 pesquisa por produto', () => scenario('UI-03', async driver => {
   await click(driver, '#searchQuery')
