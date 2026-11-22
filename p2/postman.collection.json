@@ -9,7 +9,7 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "if (!/^http://(127.0.0.1|localhost|[::1])(:d+)?$/.test(pm.environment.get('baseUrl'))) throw new Error('Somente loopback');",
+          "if (!['http://127.0.0.1:3000','http://localhost:3000','http://[::1]:3000'].includes(pm.environment.get('baseUrl'))) throw new Error('Somente loopback na porta 3000');",
           "if (pm.info.requestName.startsWith('API-01')) pm.environment.set('email','p2.api.'+Date.now()+'@example.test');"
         ]
       }
