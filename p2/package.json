@@ -1,0 +1,17 @@
+{
+  "name": "juice-shop-p2-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:unit": "node --test unit.test.mjs",
+    "test:api": "newman run postman.collection.json -e postman.environment.json --reporters cli,json,junit --reporter-json-export evidence/newman.json --reporter-junit-export evidence/newman.xml",
+    "test:ui": "node --test --test-concurrency=1 selenium.test.mjs",
+    "test:nf": "node nonfunctional.mjs"
+  },
+  "devDependencies": {
+    "newman": "6.2.1",
+    "selenium-webdriver": "4.29.0"
+  },
+  "engines": { "node": ">=22" }
+}

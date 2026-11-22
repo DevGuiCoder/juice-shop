@@ -1,0 +1,60 @@
+name: P2 Testes e Qualidade
+on:
+  push:
+    branches: ['p2/**']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      controlled_failure:
+        description: Demonstrar falha controlada antes de repetir sem esta opção
+        type: boolean
+        default: false
+permissions:
+  contents: read
+env:
+  P2_CONTROLLED_FAILURE: '1'
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Demonstração controlada RED do pipeline
+        if: env.P2_CONTROLLED_FAILURE == '1'
+        run: node -e "require('node:assert/strict').equal('falha controlada', 'aprovado')"
+      - name: Instalar aplicação
+        run: npm install
+        env:
+          CYPRESS_INSTALL_BINARY: '0'
+      - name: Instalar testes acadêmicos
+        run: npm install --prefix p2
+      - name: Preparar evidências
+        run: mkdir -p p2/evidence
+      - name: Unitários P2
+        run: node --import ./test/server/helpers/test-env.mjs --import tsx --test --test-force-exit --test-reporter=junit test/server/p2Date.unit.test.ts > p2/evidence/unit.xml
+      - name: Verificação controlada
+        if: inputs.controlled_failure == true
+        run: node -e "require('node:assert/strict').equal('falha controlada', 'aprovado')"
+      - name: Iniciar ambiente local
+        run: |
+          node --require ./p2/loopback.cjs build/app > p2/evidence/server.txt 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail http://127.0.0.1:3000/api/Products; then exit 0; fi
+            sleep 2
+          done
+          exit 1
+      - name: Integração Postman
+        working-directory: p2
+        run: npm run test:api
+      - name: Interface Selenium
+        working-directory: p2
+        run: npm run test:ui
+      - name: Publicar resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-evidencias-${{ github.run_id }}
+          path: p2/evidence

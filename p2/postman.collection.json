@@ -1,0 +1,208 @@
+{
+  "info": {
+    "name": "P2 Juice Shop local",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!/^http://(127.0.0.1|localhost|[::1])(:d+)?$/.test(pm.environment.get('baseUrl'))) throw new Error('Somente loopback');",
+          "if (pm.info.requestName.startsWith('API-01')) pm.environment.set('email','p2.api.'+Date.now()+'@example.test');"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "API-01 RF-01 Cadastro válido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/Users",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"{{email}}\",\"password\":\"{{password}}\",\"passwordRepeat\":\"{{password}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 e conta persistida', () => { pm.response.to.have.status(201); const j=pm.response.json(); pm.expect(j.data.id).to.be.a('number'); pm.expect(j.data.email).to.eql(pm.environment.get('email')); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-02 RF-02 Login válido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/rest/user/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"{{email}}\",\"password\":\"{{password}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200, token e carrinho', () => { pm.response.to.have.status(200); const a=pm.response.json().authentication; pm.expect(a.token).to.be.a('string').and.not.empty; pm.expect(a.bid).to.be.a('number'); pm.expect(a.umail).to.eql(pm.environment.get('email')); pm.environment.set('token',a.token); pm.environment.set('basketId',a.bid); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-03 RF-02 Senha inválida",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/rest/user/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"{{email}}\",\"password\":\"Incorreta123!\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('401 e mensagem sem token', () => { pm.response.to.have.status(401); pm.expect(pm.response.text()).not.to.be.empty; pm.expect(pm.response.text()).not.to.include('authentication'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-04 RF-03 Busca válida",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/rest/products/search?q=Apple"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 e produtos compatíveis', () => { pm.response.to.have.status(200); const d=pm.response.json().data; pm.expect(d).to.be.an('array').and.not.empty; d.forEach(p=>{pm.expect(p.id).to.be.a('number');pm.expect(p.price).to.be.a('number');pm.expect((p.name+' '+p.description).toLowerCase()).to.include('apple');}); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-05 RF-03 Busca inexistente",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/rest/products/search?q=p2inexistente987654321"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 e lista vazia', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().data).to.eql([]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-06 RF-04 Carrinho próprio",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/rest/basket/{{basketId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 e carrinho da sessão', () => { pm.response.to.have.status(200); const d=pm.response.json().data; pm.expect(d.id).to.eql(Number(pm.environment.get('basketId'))); pm.expect(d.Products).to.be.an('array'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-07 RF-01 Cadastro duplicado",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/Users",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"{{email}}\",\"password\":\"{{password}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('400 e erro de unicidade', () => { pm.response.to.have.status(400); const j=pm.response.json(); pm.expect(j.errors).to.be.an('array').and.not.empty; pm.expect(JSON.stringify(j.errors).toLowerCase()).to.include('unique'); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
