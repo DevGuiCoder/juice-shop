@@ -34,6 +34,7 @@ jobs:
         if: inputs.controlled_failure == true
         run: node -e "require('node:assert/strict').equal('falha controlada', 'aprovado')"
       - name: Iniciar ambiente local
+        id: server
         run: |
           node --require ./p2/loopback.cjs build/app > p2/evidence/server.txt 2>&1 &
           for attempt in $(seq 1 60); do
@@ -45,8 +46,17 @@ jobs:
         working-directory: p2
         run: npm run test:api
       - name: Interface Selenium
+        if: always() && steps.server.outcome == 'success'
         working-directory: p2
         run: npm run test:ui
+      - name: Desempenho e confiabilidade
+        if: always() && steps.server.outcome == 'success'
+        working-directory: p2
+        run: npm run test:nf
+      - name: Compatibilidade de resoluções
+        if: always() && steps.server.outcome == 'success'
+        working-directory: p2
+        run: node compatibility.mjs
       - name: Publicar resultados
         if: always()
         uses: actions/upload-artifact@v4
