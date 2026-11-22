@@ -1,0 +1,42 @@
+﻿[
+    {
+        "id":  45047509938,
+        "name":  "CI/CD Pipeline",
+        "status":  "queued",
+        "conclusion":  null,
+        "html_url":  "https://github.com/DevGuiCoder/juice-shop/actions/runs/45047509938",
+        "head_sha":  "97e353612dba4791e3c6f5d5becbed58d9c5a8b2",
+        "created_at":  "2026-11-22T17:06:01Z",
+        "updated_at":  "2026-11-22T17:06:01Z"
+    },
+    {
+        "id":  45047509932,
+        "name":  "CodeQL Scan",
+        "status":  "in_progress",
+        "conclusion":  null,
+        "html_url":  "https://github.com/DevGuiCoder/juice-shop/actions/runs/45047509932",
+        "head_sha":  "97e353612dba4791e3c6f5d5becbed58d9c5a8b2",
+        "created_at":  "2026-11-22T17:06:01Z",
+        "updated_at":  "2026-11-22T17:06:04Z"
+    },
+    {
+        "id":  45047510011,
+        "name":  "Let me lint:fix that for you",
+        "status":  "in_progress",
+        "conclusion":  null,
+        "html_url":  "https://github.com/DevGuiCoder/juice-shop/actions/runs/45047510011",
+        "head_sha":  "97e353612dba4791e3c6f5d5becbed58d9c5a8b2",
+        "created_at":  "2026-11-22T17:06:01Z",
+        "updated_at":  "2026-11-22T17:06:04Z"
+    },
+    {
+        "id":  45047509965,
+        "name":  "P2 Testes e Qualidade",
+        "status":  "completed",
+        "conclusion":  "failure",
+        "html_url":  "https://github.com/DevGuiCoder/juice-shop/actions/runs/45047509965",
+        "head_sha":  "97e353612dba4791e3c6f5d5becbed58d9c5a8b2",
+        "created_at":  "2026-11-22T17:06:01Z",
+        "updated_at":  "2026-11-22T17:06:12Z"
+    }
+]
