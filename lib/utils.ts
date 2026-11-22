@@ -87,6 +87,9 @@ export const toMMMYY = (date: Date) => {
 }
 
 export const toISO8601 = (date: Date) => {
+  if (Number.isNaN(date.getTime())) {
+    throw new RangeError('Invalid date')
+  }
   let day = '' + date.getDate()
   let month = '' + (date.getMonth() + 1)
   const year = date.getFullYear()
