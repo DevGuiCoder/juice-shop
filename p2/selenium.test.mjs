@@ -59,6 +59,8 @@ test('UI-01 CT-001 cadastro pela interface', () => scenario('UI-01', async drive
   await (await locate(driver, '#emailControl')).sendKeys(email)
   await (await locate(driver, '#passwordControl')).sendKeys(password)
   await (await locate(driver, '#repeatPasswordControl')).sendKeys(password)
+  assert.equal(await (await locate(driver, 'mat-form-field:has(#passwordControl) mat-hint[align="end"]')).getText(), `${password.length}/40`)
+  await writeFile('evidence/DEF-002-retest.png', await driver.takeScreenshot(), 'base64')
   await (await locate(driver, 'mat-select[name="securityQuestion"]')).sendKeys(Key.SPACE)
   await click(driver, 'mat-option')
   await (await locate(driver, '#securityAnswerControl')).sendKeys('Azul')
