@@ -1,0 +1,38 @@
+name: P2 SonarQube baseline e posterior
+on:
+  push:
+    branches: ['p2/**']
+    paths: ['.github/workflows/p2-sonar.yml', 'p2/sonar-compare.sh']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preparar SonarQube isolado
+        run: |
+          sudo sysctl -w vm.max_map_count=524288
+          docker run -d --name p2-sonar --ulimit nofile=131072:131072 -p 127.0.0.1:9000:9000 sonarqube:community
+          mkdir -p p2/evidence/sonar
+          docker image inspect sonarqube:community --format '{{json .RepoDigests}}' > p2/evidence/sonar/server-image.json
+          for attempt in $(seq 1 120); do
+            if curl -fsS http://127.0.0.1:9000/api/system/status | jq -e '.status == "UP"'; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Analisar baseline e revisão posterior
+        run: bash p2/sonar-compare.sh
+      - name: Preservar diagnóstico
+        if: always()
+        run: docker logs p2-sonar > p2/evidence/sonar/server.txt 2>&1 || true
+      - name: Publicar duas análises
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-sonarqube-${{ github.run_id }}
+          path: p2/evidence/sonar
