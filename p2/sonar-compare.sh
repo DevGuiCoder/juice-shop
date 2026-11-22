@@ -15,14 +15,14 @@ for phase in baseline posterior; do
   source="$PWD"
   revision=$(git rev-parse HEAD)
   if [ "$phase" = baseline ]; then source="$baseline"; revision=$(git rev-parse 1618a61); fi
-  docker run --rm --user 0 --network host -e SONAR_HOST_URL -e SONAR_TOKEN -v "$source:/usr/src" sonarsource/sonar-scanner-cli \
+  docker run --rm --user 0 --network host -e SONAR_HOST_URL -e SONAR_TOKEN -v "$source:/usr/src" -v "$evidence:/evidence" sonarsource/sonar-scanner-cli \
     -Dsonar.projectKey=p2-juice-shop \
     -Dsonar.projectName='Juice Shop P2' \
     -Dsonar.projectVersion="$revision" \
     -Dsonar.sources=lib,routes,models,frontend/src \
     -Dsonar.exclusions='**/*.spec.ts,**/assets/**,**/node_modules/**' \
+    -Dsonar.scanner.metadataFilePath="/evidence/$phase-task.txt" \
     -Dsonar.sourceEncoding=UTF-8 2>&1 | tee "$evidence/$phase-scanner.txt"
-  cp "$source/.scannerwork/report-task.txt" "$evidence/$phase-task.txt"
   task=$(sed -n 's/^ceTaskId=//p' "$evidence/$phase-task.txt")
   ready=false
   for attempt in $(seq 1 90); do
