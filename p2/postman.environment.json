@@ -25,6 +25,11 @@
       "key": "basketId",
       "value": "",
       "enabled": true
+    },
+    {
+      "key": "basketItemId",
+      "value": "",
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment"

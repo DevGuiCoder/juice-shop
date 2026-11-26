@@ -149,7 +149,7 @@
       ]
     },
     {
-      "name": "API-06 RF-04 Carrinho próprio",
+      "name": "API-06 RF-05 Carrinho próprio",
       "request": {
         "method": "GET",
         "header": [
@@ -171,6 +171,94 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('200 e carrinho da sessão', () => { pm.response.to.have.status(200); const d=pm.response.json().data; pm.expect(d.id).to.eql(Number(pm.environment.get('basketId'))); pm.expect(d.Products).to.be.an('array'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-08 RF-05 Adicionar item ao carrinho",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/BasketItems",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"ProductId\":1,\"BasketId\":\"{{basketId}}\",\"quantity\":1}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 e item vinculado ao carrinho', () => { pm.response.to.have.status(200); const d=pm.response.json().data; pm.expect(d.ProductId).to.eql(1); pm.expect(Number(d.BasketId)).to.eql(Number(pm.environment.get('basketId'))); pm.expect(d.quantity).to.eql(1); pm.environment.set('basketItemId', d.id); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-09 RF-06 Remover item do carrinho",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/BasketItems/{{basketItemId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 na remoção', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().status).to.eql('success'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-10 RF-06 Carrinho sem o item removido",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/rest/basket/{{basketId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('item removido não aparece', () => { pm.response.to.have.status(200); const ids=pm.response.json().data.Products.map(p=>p.BasketItem.id); pm.expect(ids).to.not.include(Number(pm.environment.get('basketItemId'))); });"
             ]
           }
         }

@@ -29,7 +29,7 @@ jobs:
       - name: Preparar evidências
         run: mkdir -p p2/evidence
       - name: Unitários P2
-        run: node --import ./test/server/helpers/test-env.mjs --import tsx --test --test-force-exit --test-reporter=junit test/server/p2Date.unit.test.ts > p2/evidence/unit.xml
+        run: node --import ./test/server/helpers/test-env.mjs --import tsx --test --test-force-exit --test-reporter=junit test/server/p2Date.unit.test.ts test/server/p2Utils.unit.test.ts > p2/evidence/unit.xml
       - name: Verificação controlada
         if: inputs.controlled_failure == true
         run: node -e "require('node:assert/strict').equal('falha controlada', 'aprovado')"

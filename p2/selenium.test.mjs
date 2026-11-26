@@ -53,7 +53,7 @@ async function scenario (id, body) {
     if (driver) await driver.quit()
   }
 }
-test('UI-01 CT-001 cadastro pela interface', () => scenario('UI-01', async driver => {
+test('UI-01 CT-01 cadastro pela interface', () => scenario('UI-01', async driver => {
   const email = `p2.register.${Date.now()}@example.test`
   await driver.get(baseUrl + '/#/register')
   await (await locate(driver, '#emailControl')).sendKeys(email)
@@ -69,14 +69,14 @@ test('UI-01 CT-001 cadastro pela interface', () => scenario('UI-01', async drive
   await login(driver, email)
   assert.ok(await driver.executeScript('return localStorage.getItem("token")'))
 }))
-test('UI-02 CT-009 login da conta própria', () => scenario('UI-02', async driver => {
+test('UI-02 CT-10 login da conta própria', () => scenario('UI-02', async driver => {
   await login(driver, await createAccount())
   await click(driver, '#navbarAccount')
   const logout = await locate(driver, '#navbarLogoutButton')
   await driver.wait(until.elementIsVisible(logout), 10000)
   assert.ok(await logout.isDisplayed())
 }))
-test('UI-03 CT-013 pesquisa por produto', () => scenario('UI-03', async driver => {
+test('UI-03 CT-14 pesquisa por produto', () => scenario('UI-03', async driver => {
   await click(driver, '#searchQuery')
   await (await locate(driver, '#searchQuery input')).sendKeys('Apple', Key.ENTER)
   await driver.wait(until.elementLocated(By.css('app-product')), 15000)
@@ -84,7 +84,7 @@ test('UI-03 CT-013 pesquisa por produto', () => scenario('UI-03', async driver =
   assert.match(text, /Apple/i)
   assert.equal(await (await locate(driver, '#searchValue')).getText(), 'Apple')
 }))
-test('UI-04 CT-016 adicionar ao carrinho', () => scenario('UI-04', async driver => {
+test('UI-04 CT-20 adicionar ao carrinho', () => scenario('UI-04', async driver => {
   await login(driver, await createAccount())
   await driver.get(baseUrl + '/#/search?q=Apple')
   const card = await locate(driver, 'app-product')
@@ -94,4 +94,17 @@ test('UI-04 CT-016 adicionar ao carrinho', () => scenario('UI-04', async driver 
   await driver.get(baseUrl + '/#/basket')
   await driver.wait(async () => (await (await locate(driver, 'app-basket')).getText()).includes(name), 15000)
   assert.match(await (await locate(driver, 'app-basket')).getText(), new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+}))
+test('UI-05 CT-23 remover item do carrinho', () => scenario('UI-05', async driver => {
+  await login(driver, await createAccount())
+  await driver.get(baseUrl + '/#/search?q=Apple')
+  const card = await locate(driver, 'app-product')
+  const name = await card.findElement(By.css('.name')).getText()
+  await card.findElement(By.css('button[aria-label="Add to Basket"]')).click()
+  await driver.wait(until.elementLocated(By.css('.mat-mdc-snack-bar-label')), 10000)
+  await driver.get(baseUrl + '/#/basket')
+  await driver.wait(async () => (await (await locate(driver, 'app-basket')).getText()).includes(name), 15000)
+  await click(driver, 'mat-row button:has(.fa-trash-alt)')
+  await driver.wait(async () => !(await (await locate(driver, 'app-basket')).getText()).includes(name), 15000)
+  assert.doesNotMatch(await (await locate(driver, 'app-basket')).getText(), new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
 }))
