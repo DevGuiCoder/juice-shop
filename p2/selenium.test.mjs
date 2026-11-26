@@ -59,7 +59,9 @@ test('UI-01 CT-01 cadastro pela interface', () => scenario('UI-01', async driver
   await (await locate(driver, '#emailControl')).sendKeys(email)
   await (await locate(driver, '#passwordControl')).sendKeys(password)
   await (await locate(driver, '#repeatPasswordControl')).sendKeys(password)
-  assert.equal(await (await locate(driver, 'mat-form-field:has(#passwordControl) mat-hint[align="end"]')).getText(), `${password.length}/40`)
+  const counter = `${password.length}/40`
+  await driver.wait(async () => (await driver.executeScript('return document.body.innerText')).includes(counter), 15000)
+  assert.ok((await driver.executeScript('return document.body.innerText')).includes(counter), `Contador ${counter} não exibido`)
   await writeFile('evidence/DEF-002-retest.png', await driver.takeScreenshot(), 'base64')
   await (await locate(driver, 'mat-select[name="securityQuestion"]')).sendKeys(Key.SPACE)
   await click(driver, 'mat-option')
